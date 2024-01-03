@@ -9,7 +9,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(group)
 
         self.import_assets()
-        self.status = 'rl_swing'
+        self.status = 'idle_down'
         self.frame_index = 0
 
         #general setup
@@ -22,7 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = pygame.math.Vector2(self.rect.center)
         self.speed = 200
 
-        self.scale_factor = 2
+        self.scale_factor = 3
 
 
 
@@ -59,11 +59,16 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_d]:
             self.direction.x = 1
-            self.status = 'rl'
+            self.status = 'r'
         elif keys[pygame.K_a]:
             self.direction.x = -1
         else:
             self.direction.x = 0
+
+    def get_status(self):
+        #if player is not moving put idle status
+        if self.direction.magnitude() == 0:
+            self.status = self.status.split('_')[0] + 'idle_down'
 
     def move(self, dt):
 
