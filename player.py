@@ -12,9 +12,10 @@ class Player(pygame.sprite.Sprite):
         self.status = 'r_idle'
         self.frame_index = 0
 
+
         #general setup
         self.image = self.animations[self.status][self.frame_index]
-        self.rect = self.image.get_rect(center = pos)
+        self.rect = self.image.get_rect(topleft = pos)
 
         self.direction = pygame.math.Vector2(0, 0)
         self.pos = pygame.math.Vector2(self.rect.center)
@@ -87,6 +88,8 @@ class Player(pygame.sprite.Sprite):
             self.status = 'l'
         else:
             self.direction.x = 0
+
+        
         
         if keys[pygame.K_w] and keys[pygame.K_SPACE]:
             self.direction.y = -1

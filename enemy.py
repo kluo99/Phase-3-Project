@@ -14,20 +14,24 @@ class Enemy(pygame.sprite.Sprite):
         self.status = 'idle'
         self.frame_index = 0
         self.scale_factor = 4
-
+        
         self.image = self.animations[self.status][self.frame_index]
-        self.original_rect = self.image.get_rect(center=pos)
-        self.rect = self.image.get_rect(center = pos)
+        self.original_rect = self.image.get_rect(topleft=pos)
+        self.rect = self.image.get_rect(topleft = pos)
         self.direction = pygame.math.Vector2(0, 0)
 
-        self.hitbox_radius = 60  # Adjust the hitbox radius based on your game
-        self.hitbox = pygame.Rect(0, 0, self.hitbox_radius * 2, self.hitbox_radius * 2)
+        # self.hitbox_radius = 60  # Adjust the hitbox radius based on your game
+        # self.hitbox = pygame.Rect(0, 0, self.hitbox_radius * 2, self.hitbox_radius * 2)
+        self.flash_duration = 0.2  # Duration of the flashing effect in seconds
+        self.last_flash_time = 0
+        self.flash_interval = 0.05  # Time interval between flashes in seconds
+        self.flash_toggle = True
 
 
         self.direction = pygame.math.Vector2(0, 0)
         self.pos = pygame.math.Vector2(self.rect.center)
 
-        self.health = 3
+        self.health = 2
         self.last_damage_time = 0 
 
     def import_assets(self):
@@ -49,7 +53,7 @@ class Enemy(pygame.sprite.Sprite):
     
         # self.image = scaled_frame
         self.image = pygame.Surface(scaled_frame.get_size(), pygame.SRCALPHA)
-        self.image.fill((0, 0, 0, 128))  # Black color with 50% transparency
+        # self.image.fill((0, 0, 0, 128))  # Black color with 50% transparency
         self.image.blit(scaled_frame, (0, 0))
         self.rect = scaled_frame.get_rect(center=self.rect.center)
 
@@ -92,14 +96,15 @@ class Enemy(pygame.sprite.Sprite):
 
             angle = 0.1 * dt  # Adjust the angular speed as needed
             self.direction.rotate_ip(angle)
-            self.animate(dt)
+            
             self.pos += self.direction * dt
+            self.animate(dt)
             # self.rect.center = self.pos
             self.original_rect.center = self.pos
+            self.rect = self.image.get_rect(center=self.pos)
+            # enlarged_rect = self.original_rect.inflate(20, 20)  # Adjust the inflation values as needed
+            # self.rect = enlarged_rect
 
-            enlarged_rect = self.original_rect.inflate(20, 20)  # Adjust the inflation values as needed
-            self.rect = enlarged_rect
-
-            self.hitbox.center = self.rect.center
+            # self.hitbox.center = self.rect.center
         
         

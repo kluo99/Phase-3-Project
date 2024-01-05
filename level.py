@@ -45,11 +45,13 @@ class Level:
 
         self.enemy1 = Enemy((1560, 1180), self.all_sprites, self.enemy_group)
         self.enemy2 = Enemy((1660, 1280), self.all_sprites, self.enemy_group)
+        self.enemy3 = Enemy((1760, 1380), self.all_sprites, self.enemy_group)
         self.player = Player((1560, 780), self.all_sprites)
         self.enemy_group.add(self.enemy1)
         self.enemy_group.add(self.enemy2)
+        self.enemy_group.add(self.enemy3)
 
-    def run(self, dt):
+    def run(self, dt, screen):
         self.all_sprites.custom_draw(self.player, self.invincible_time)
         self.all_sprites.update(dt)
         self.overlay.display()
@@ -70,21 +72,30 @@ class Level:
             # self.enemy1.health -= 1
             # print(f"Enemy health: {self.enemy1.health}")
             # print(f"Enemy health: {self.enemy2.health}")
-            if time.time() > self.invincible_time:
-                # Check if the enemy is not on cooldown
-                if time.time() > self.enemy1.last_damage_time + self.enemy_damage_cooldown:
-                    if self.enemy1.health > 0:
-                        self.enemy1.health -= 1
-                        self.enemy1.last_damage_time = time.time()  # Update the last damage time
-                        print(f"Enemy1 health: {self.enemy1.health}")
-                    else:
-                        self.enemy1.status = 'dead'
+            for enemy in collisions:
+                if time.time() > self.invincible_time:
+                    # Check if the enemy is not on cooldown
+                    if time.time() > enemy.last_damage_time + self.enemy_damage_cooldown:
+                        if enemy.health > 0:
+                            enemy.health -= 1
+                            enemy.last_damage_time = time.time()  # Update the last damage time
+                            print(f"Enemy health: {enemy.health}")
+                        else:
+                            enemy.status = 'dead'
+                            enemy.direction = pygame.math.Vector2(0, 0)
             # print(f"collisions: {collisions}")
             # print("Player collided with an enemy!")
             # if self.player.status.endswith('_swing') and time.time() > self.invincible_time:
             #     print("Player is attacking!")
         elif collisions:
-            if time.time() > self.invincible_time:
+            for c in collisions:
+                print(f"player rect {self.player.rect}")
+                print(f"enemy rect {c.rect}")
+                print(f"enemy image rect {c.image.get_rect(center=c.pos)}")
+                pygame.draw.rect(screen, "red", c.rect)
+                # import pdb; pdb.set_trace()
+
+            if time.time() > self.invincible_time and enemy.health > 0:
                 self.player.health -= 1
                 print(f"Player health: {self.player.health}")
 
@@ -92,7 +103,7 @@ class Level:
 
                 if self.player.health <= 0:
                     print("Player is dead!")
-                    self.reset()
+                    # self.reset()
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):

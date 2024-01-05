@@ -22,7 +22,7 @@ class Game:
                     self.level.reset()
             
             dt = self.clock.tick() / 1000
-            self.level.run(dt)
+            self.level.run(dt, self.screen)
             pygame.display.update()
 
 if __name__ == '__main__':
