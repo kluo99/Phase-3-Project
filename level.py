@@ -46,10 +46,14 @@ class Level:
         self.enemy1 = Enemy((1560, 1180), self.all_sprites, self.enemy_group)
         self.enemy2 = Enemy((1660, 1280), self.all_sprites, self.enemy_group)
         self.enemy3 = Enemy((1760, 1380), self.all_sprites, self.enemy_group)
+        self.enemy4 = Enemy((1860, 1280), self.all_sprites, self.enemy_group)
+        self.enemy5 = Enemy((1790, 1380), self.all_sprites, self.enemy_group)
         self.player = Player((1560, 780), self.all_sprites)
         self.enemy_group.add(self.enemy1)
         self.enemy_group.add(self.enemy2)
         self.enemy_group.add(self.enemy3)
+        self.enemy_group.add(self.enemy4)
+        self.enemy_group.add(self.enemy5)
 
     def run(self, dt, screen):
         self.all_sprites.custom_draw(self.player, self.invincible_time)
@@ -83,17 +87,13 @@ class Level:
                         else:
                             enemy.status = 'dead'
                             enemy.direction = pygame.math.Vector2(0, 0)
-            # print(f"collisions: {collisions}")
-            # print("Player collided with an enemy!")
-            # if self.player.status.endswith('_swing') and time.time() > self.invincible_time:
-            #     print("Player is attacking!")
+
         elif collisions:
             for c in collisions:
                 print(f"player rect {self.player.rect}")
                 print(f"enemy rect {c.rect}")
                 print(f"enemy image rect {c.image.get_rect(center=c.pos)}")
                 pygame.draw.rect(screen, "red", c.rect)
-                # import pdb; pdb.set_trace()
 
             if time.time() > self.invincible_time and enemy.health > 0:
                 self.player.health -= 1
@@ -116,11 +116,11 @@ class CameraGroup(pygame.sprite.Group):
     
     
     def custom_draw(self, player, invincible_time):
-        if time.time() < invincible_time:
-            # Draw a transparent red surface over the screen
-            red_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-            red_surface.fill((255, 0, 0, 128))  # Red color with 50% transparency
-            self.display_surface.blit(red_surface, (0, 0))
+        # if time.time() < invincible_time:
+        #     # Draw a transparent red surface over the screen
+        #     red_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        #     red_surface.fill((255, 0, 0, 128))  # Red color with 50% transparency
+        #     self.display_surface.blit(red_surface, (0, 0))
 
         self.display_surface.blit(self.black_surface, (0, 0))
         self.offset.x = player.rect.centerx - SCREEN_WIDTH / 2
