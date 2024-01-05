@@ -16,10 +16,20 @@ class Player(pygame.sprite.Sprite):
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(center = pos)
 
+        self.direction = pygame.math.Vector2(0, 0)
+        self.pos = pygame.math.Vector2(self.rect.center)
+        # self.pos = pos
+
+        self.hitbox_radius = 50  # Adjust the radius based on your game
+        # self.hitbox = pygame.Rect(0, 0, self.hitbox_radius * 2, self.hitbox_radius * 2)
+        self.hitbox = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
+
+        self.swing_hitbox = pygame.Rect(0, 0, 0, 0)
+
         #movement attributes
         self.direction = pygame.math.Vector2(0, 0)
         self.pos = pygame.math.Vector2(self.rect.center)
-        self.speed = 970
+        self.speed = 570
 
         self.health = 5
 
@@ -43,7 +53,19 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(original_frame,
                                             (int(original_frame.get_width() * self.scale_factor),
                                              int(original_frame.get_height() * self.scale_factor)))
-        # self.image = self.animations[self.status][int(self.frame_index)]
+        
+    
+    def animatedeath(self, dt):
+        self.frame_index += 10 * dt
+
+        # Check if the animation has reached the end
+        if self.frame_index >= len(self.animations[self.status]):
+            self.frame_index = len(self.animations[self.status]) - 1  # Set to the last frame
+
+        original_frame = self.animations[self.status][int(self.frame_index)]
+        self.image = pygame.transform.scale(original_frame,
+                                        (int(original_frame.get_width() * self.scale_factor),
+                                         int(original_frame.get_height() * self.scale_factor)))
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -85,7 +107,7 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_SPACE] and self.direction.magnitude() == 0:
-            self.status = 'down_swing'
+            self.status = 'r_swing'
         elif keys[pygame.K_SPACE] and self.direction.magnitude() == 0 and self.status == 'l_idle':
             self.status = 'l_swing'
         elif keys[pygame.K_SPACE] and self.direction.magnitude() == 0 and self.status == 'up_idle':
@@ -101,6 +123,7 @@ class Player(pygame.sprite.Sprite):
         
 
 
+
     def move(self, dt):
 
         #normalizing vector
@@ -111,9 +134,9 @@ class Player(pygame.sprite.Sprite):
 
         # Check for collisions with the boundaries of the map
         min_x = 0
-        max_x = 3380 - self.rect.width  # Adjust this value based on your map size
+        max_x = 3380 - self.rect.width 
         min_y = 0
-        max_y = 1890 - self.rect.height  # Adjust this value based on your map size
+        max_y = 1890 - self.rect.height  
 
         # Update the position only if it stays within the map boundaries
         if min_x <= new_pos.x <= max_x and min_y <= new_pos.y <= max_y:
@@ -122,7 +145,14 @@ class Player(pygame.sprite.Sprite):
             self.rect.centery = self.pos.y
     
     def update(self, dt):
-        self.input()
-        self.move(dt)
-        self.get_status()
-        self.animate(dt)
+        self.hitbox.topleft = self.rect.topleft
+        if self.health <= 0:
+            self.direction = pygame.math.Vector2(0, 0)
+            self.status = 'dead'
+            self.animatedeath(dt)
+        else:
+            self.input()
+            self.move(dt)
+            self.get_status()
+            self.animate(dt)
+

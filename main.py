@@ -13,12 +13,13 @@ class Game:
     
     def run(self):
         while True:
-            # self.screen.blit()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit() 
-            
+
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                    self.level.reset()
             
             dt = self.clock.tick() / 1000
             self.level.run(dt)

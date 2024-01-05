@@ -4,6 +4,8 @@ from player import Player
 from sprites import Generic
 from overlay import Overlay
 from enemy import Enemy
+import time
+import random
 
 class Level:
     def __init__(self):
@@ -16,18 +18,29 @@ class Level:
         self.collision_sprites = pygame.sprite.Group()
         self.enemy_group = pygame.sprite.Group()
 
+        self.invincibility_duration = 1.0 
+        self.invincible_time = 0
+
         self.setup()
         self.overlay = Overlay(self.player)
-
+        self.enemy_damage_cooldown = 0.5
+    
+    def reset(self):
+        self.all_sprites.empty()  # Clear all sprites
+        self.collision_sprites.empty()  # Clear collision sprites
+        self.enemy_group.empty()  # Clear enemy group
+        self.setup()  # Re-setup the level
+        self.overlay = Overlay(self.player)
 
 
     def setup(self):
         background_image = pygame.image.load('data/dungeon.png')
+        self.original_player_position = (1560, 780)
         scaled_background = pygame.transform.scale(background_image, (3380, 1920))
         Generic(
-            pos = (0,0),
-            surf = scaled_background,
-            groups = self.all_sprites
+            pos=(0, 0),
+            surf=scaled_background,
+            groups=self.all_sprites
         )
 
         self.enemy1 = Enemy((1560, 1180), self.all_sprites, self.enemy_group)
@@ -36,27 +49,50 @@ class Level:
         self.enemy_group.add(self.enemy1)
         self.enemy_group.add(self.enemy2)
 
-
     def run(self, dt):
-        self.all_sprites.custom_draw(self.player)
+        self.all_sprites.custom_draw(self.player, self.invincible_time)
         self.all_sprites.update(dt)
         self.overlay.display()
 
+        player_hitbox = self.player.hitbox
+
+
         for enemy in self.enemy_group.sprites():
             enemy.update(dt)
-    
+
+        player_position = (self.player.rect.centerx, self.player.rect.centery)
+
+        # for enemy in self.enemy_group.sprites():
         collisions = pygame.sprite.spritecollide(self.player, self.enemy_group, False)
-        # print(self.enemy_group)
-        # for enemy in self.enemy_group:
-        #      print(enemy)
-        #      collisions.append(pygame.sprite.collide_rect(self.player, enemy))
-        
-        if collisions:
-            print(f"collisions: {collisions}")
-            print("Player collided with an enemy!")
 
-            
 
+        if collisions and self.player.status.endswith('_swing'):
+            # self.enemy1.health -= 1
+            # print(f"Enemy health: {self.enemy1.health}")
+            # print(f"Enemy health: {self.enemy2.health}")
+            if time.time() > self.invincible_time:
+                # Check if the enemy is not on cooldown
+                if time.time() > self.enemy1.last_damage_time + self.enemy_damage_cooldown:
+                    if self.enemy1.health > 0:
+                        self.enemy1.health -= 1
+                        self.enemy1.last_damage_time = time.time()  # Update the last damage time
+                        print(f"Enemy1 health: {self.enemy1.health}")
+                    else:
+                        self.enemy1.status = 'dead'
+            # print(f"collisions: {collisions}")
+            # print("Player collided with an enemy!")
+            # if self.player.status.endswith('_swing') and time.time() > self.invincible_time:
+            #     print("Player is attacking!")
+        elif collisions:
+            if time.time() > self.invincible_time:
+                self.player.health -= 1
+                print(f"Player health: {self.player.health}")
+
+                self.invincible_time = time.time() + self.invincibility_duration
+
+                if self.player.health <= 0:
+                    print("Player is dead!")
+                    self.reset()
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -68,11 +104,16 @@ class CameraGroup(pygame.sprite.Group):
         self.black_surface.fill((0, 0, 0))
     
     
-    def custom_draw(self, player):
+    def custom_draw(self, player, invincible_time):
+        if time.time() < invincible_time:
+            # Draw a transparent red surface over the screen
+            red_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+            red_surface.fill((255, 0, 0, 128))  # Red color with 50% transparency
+            self.display_surface.blit(red_surface, (0, 0))
+
         self.display_surface.blit(self.black_surface, (0, 0))
         self.offset.x = player.rect.centerx - SCREEN_WIDTH / 2
         self.offset.y = player.rect.centery - SCREEN_HEIGHT / 2
-
 
         for sprite in self.sprites():
             offset_rect = sprite.rect.copy()
